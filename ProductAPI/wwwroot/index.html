@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Products</title>
+</head>
+
+<body>
+
+    <h1>Products:</h1>
+
+    <!-- Product List -->
+    <ul id="products-list"></ul>
+
+    <!-- Button to show form -->
+    <button id="show-form-btn">Create Product</button>
+
+    <!-- Create Product Form -->
+    <form id="create-form" style="display:none;">
+
+        <p>Create a New Product</p>
+
+        <input name="name" placeholder="Name" required />
+
+        <input name="price" placeholder="Price" type="number" step="0.01" required />
+
+        <input name="inventory" placeholder="Inventory" type="number" required />
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Confirmation -->
+    <div id="confirmation" style="display:none;">
+        <p>Product Created</p>
+        <a id="back-link" href="#">Back to Products</a>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5267/productAPI";
+
+        // load product list
+        function loadProducts() {
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById("products-list");
+                    list.innerHTML = "";
+
+                    data.forEach(p => {
+                        const li = document.createElement("li");
+                        li.textContent = `${p.name} - $${p.price} (${p.inventory} in stock)`;
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        loadProducts();
+
+        // show form
+        document.getElementById("show-form-btn")
+            .addEventListener("click", () => {
+                document.getElementById("create-form").style.display = "block";
+            });
+
+        // submit form
+        document.getElementById("create-form")
+            .addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const product = {
+                    name: e.target.name.value,
+                    price: parseFloat(e.target.price.value),
+                    inventory: parseInt(e.target.inventory.value)
+                };
+
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(product)
+                });
+
+                // show confirmation
+                document.getElementById("create-form").style.display = "none";
+                document.getElementById("confirmation").style.display = "block";
+            });
+
+        // back to products
+        document.getElementById("back-link")
+            .addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("confirmation").style.display = "none";
+                loadProducts();
+            });
+
+    </script>
+
+</body>
+
+</html>
